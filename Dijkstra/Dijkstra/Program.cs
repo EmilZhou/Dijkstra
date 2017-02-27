@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dijkstra
 {
@@ -53,6 +51,8 @@ namespace Dijkstra
             // The stack index, be used to switch positive and reverse.
             int stackIndex = 0;
 
+            Node intersectionNode = null;
+
             while (!intersect)
             {
                 // Takes turns to get positive or reverse stack as current direction stack.
@@ -74,6 +74,8 @@ namespace Dijkstra
                     intersect = true;
                     // TODO: return the path.
                     Console.WriteLine("Bingo: positive and reverse Direction has met");
+
+                    intersectionNode = v;
                 }
                 else
                 {
@@ -92,11 +94,12 @@ namespace Dijkstra
                         // whether this adjacent node is selected. if it is selected it is the shortest path.
                         if (wi.Staut != NodeState.Select)
                         {
-                            // the adjacent node did not selecte. update the distance.
+                            // update the distance of source -> vi-> w.
                             int visiedLength = edge.Length + vi.Dist;
                             if (visiedLength < wi.Dist)
                             {
                                 wi.Dist = visiedLength;
+                                wi.ViaNode = v;
                             }
 
                             // Push if the adjacent is no longer stack
@@ -109,9 +112,9 @@ namespace Dijkstra
                     }
                     // Orders the stack
                     var sortedNode = stack.OrderByDescending(n => n.NodeInformations[stackIndex].Dist);
-                    stack = new Stack<Node>(sortedNode);
+                    stacks[stackIndex] = new Stack<Node>(sortedNode);
 
-                    // Switchs the direction
+                    //Switchs the direction
                     if (stackIndex == 0)
                     {
                         stackIndex = 1;
@@ -121,6 +124,40 @@ namespace Dijkstra
                         stackIndex = 0;
                     }
                 }
+            }
+            Console.WriteLine("The order is:");
+
+            PrintForwardVia(intersectionNode, source);
+            PrintReverseVia(intersectionNode, target);
+        }
+
+        private static void PrintForwardVia(Node start, Node end)
+        {
+            var information = start.nodeInformations[0];
+            if (information.ViaNode == null || information.ViaNode == end)
+            {
+                Console.WriteLine(end.Id);
+                Console.WriteLine(start.Id);
+            }
+            else
+            {
+                PrintForwardVia(information.ViaNode, end);
+                Console.WriteLine(start.Id);
+            }
+
+        }
+
+        private static void PrintReverseVia(Node start, Node end)
+        {
+            var information = start.nodeInformations[1];
+            if (information.ViaNode == null || information.ViaNode == end)
+            {
+                Console.WriteLine(end.Id);
+            }
+            else
+            {
+                Console.WriteLine(start.Id);
+                PrintForwardVia(information.ViaNode, end);
             }
         }
 
